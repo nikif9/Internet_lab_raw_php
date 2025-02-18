@@ -8,12 +8,26 @@ use Firebase\JWT\Key;
 use Exception;
 
 class AuthHelper {
+    /**
+     * @var string Секретный ключ для подписи JWT-токенов
+     */
     private const SECRET_KEY = 'your-secret-key-here'; // Замените на надёжное значение
+
+    /**
+     * @var string Алгоритм подписи JWT-токенов
+     */
     private const ALGORITHM = 'HS256';
-    private const EXPIRATION_TIME = 3600; // 1 час
+
+    /**
+     * @var int Время жизни токена в секундах (1 час)
+     */
+    private const EXPIRATION_TIME = 3600;
 
     /**
      * Генерирует JWT-токен с данными payload.
+     *
+     * @param array $payload Данные, которые будут включены в токен
+     * @return string Сгенерированный JWT-токен
      */
     public static function generateToken(array $payload): string {
         $issuedAt = time();
@@ -27,7 +41,10 @@ class AuthHelper {
     }
 
     /**
-     * Проверяет JWT-токен и возвращает данные payload или null.
+     * Проверяет JWT-токен и возвращает данные payload или null при неудаче.
+     *
+     * @param string $token JWT-токен для проверки
+     * @return array|null Декодированные данные payload или null в случае ошибки
      */
     public static function verifyToken(string $token): ?array {
         try {
@@ -39,7 +56,9 @@ class AuthHelper {
     }
 
     /**
-     * Извлекает токен из заголовка Authorization.
+     * Извлекает JWT-токен из заголовка Authorization.
+     *
+     * @return string|null Извлечённый JWT-токен или null, если заголовок отсутствует
      */
     public static function getTokenFromHeader(): ?string {
         $headers = getallheaders();

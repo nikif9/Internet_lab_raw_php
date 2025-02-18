@@ -9,19 +9,39 @@ use App\Helpers\AuthHelper;
 use PDO;
 
 class UserController {
+    /**
+     * @var PDO Экземпляр PDO для взаимодействия с базой данных
+     */
     private PDO $pdo;
 
+    /**
+     * Конструктор UserController.
+     *
+     * @param Database $db Экземпляр класса Database
+     */
     public function __construct(Database $db) {
         $this->pdo = $db->getPdo();
     }
 
+    /**
+     * Отправляет JSON-ответ с заданным статусом.
+     *
+     * @param array $data Данные для отправки в формате JSON
+     * @param int $status HTTP-статус код
+     * @return void
+     */
     private function sendJson(array $data, int $status = 200): void {
         http_response_code($status);
         header('Content-Type: application/json');
         echo json_encode($data);
     }
 
-    // Создание пользователя (регистрация): POST /users
+    /**
+     * Создаёт нового пользователя (регистрация).
+     * Обрабатывает POST-запрос на /users.
+     *
+     * @return void
+     */
     public function createUser(): void {
         $data = json_decode(file_get_contents('php://input'), true) ?? [];
         if (!isset($data['username'], $data['password'], $data['email'])) {
@@ -36,8 +56,13 @@ class UserController {
         }
     }
 
-    // Получение информации о пользователе: GET /users/{id}
-    // (Публичный эндпоинт – не требует авторизации)
+    /**
+     * Получает информацию о пользователе по его ID.
+     * Обрабатывает GET-запрос на /users/{id}.
+     *
+     * @param string $id ID пользователя
+     * @return void
+     */
     public function getUser(string $id): void {
         if (!ctype_digit($id)) {
             $this->sendJson(['error' => 'Некорректный ID'], 400);
@@ -51,14 +76,18 @@ class UserController {
         }
     }
 
-    // Обновление информации о пользователе: PUT /users/{id}
-    // Требует валидного токена – пользователь может обновлять только свои данные
+    /**
+     * Обновляет информацию о пользователе.
+     * Обрабатывает PUT-запрос на /users/{id}.
+     *
+     * @param string $id ID пользователя
+     * @return void
+     */
     public function updateUser(string $id): void {
         if (!ctype_digit($id)) {
             $this->sendJson(['error' => 'Некорректный ID'], 400);
             return;
         }
-        // Проверка наличия и валидности токена
         $token = AuthHelper::getTokenFromHeader();
         if (!$token || !($payload = AuthHelper::verifyToken($token))) {
             $this->sendJson(['error' => 'Unauthorized'], 401);
@@ -85,14 +114,18 @@ class UserController {
         }
     }
 
-    // Удаление пользователя: DELETE /users/{id}
-    // Требует валидного токена – пользователь может удалить только свой аккаунт
+    /**
+     * Удаляет пользователя.
+     * Обрабатывает DELETE-запрос на /users/{id}.
+     *
+     * @param string $id ID пользователя
+     * @return void
+     */
     public function deleteUser(string $id): void {
         if (!ctype_digit($id)) {
             $this->sendJson(['error' => 'Некорректный ID'], 400);
             return;
         }
-        // Проверка наличия и валидности токена
         $token = AuthHelper::getTokenFromHeader();
         if (!$token || !($payload = AuthHelper::verifyToken($token))) {
             $this->sendJson(['error' => 'Unauthorized'], 401);
